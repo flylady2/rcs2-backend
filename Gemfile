@@ -1,10 +1,12 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
+gem 'dotenv-rails', groups: [:development, :test]
+
 ruby '2.7.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.0.3.1', '>= 6.0.3.4'
+gem 'rails', '~> 6.0.3.6'
 # Use sqlite3 as the database for Active Record
 #gem 'sqlite3', '~> 1.4'
 gem 'pg', '>= 0.18', '<2.0'
@@ -17,7 +19,7 @@ gem 'puma', '~> 4.3'
 # Use Active Model has_secure_password
  gem 'bcrypt', '~> 3.1.7'
 
- gem 'dotenv-rails'
+
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
