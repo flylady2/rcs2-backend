@@ -196,12 +196,12 @@ class Survey < ApplicationRecord
 
 
   def declare_winner(winning_array, survey)
-    byebug
+    #byebug
     choice_id = winning_array[0]["choice_id"]
     @choice = Choice.find(choice_id)
     @survey = survey
     choice = @choice
-    
+
     @survey.send_message(choice)
     params = { winner: true}
     @choice.update(params)
@@ -222,7 +222,7 @@ class Survey < ApplicationRecord
 
 
   def send_message(choice)
-    byebug
+    #byebug
     survey = self
     UserMailer.with(survey: survey, winning_choice: choice, user_email: survey.user_email).announce_winner.deliver_now
   end
