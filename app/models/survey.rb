@@ -12,6 +12,7 @@ class Survey < ApplicationRecord
 
 
   def calculate_winner
+    
     survey = self
     if survey.choices.length > 1
       choice_rankings = []

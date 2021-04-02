@@ -1,5 +1,12 @@
 class Api::V1::SurveysController < ApplicationController
 
+  def trigger
+    
+    id = params["id"]
+    @survey = Survey.find(id)
+    @survey.calculate_winner
+  end
+
   def index
     @surveys = Survey.all
 
@@ -12,7 +19,7 @@ class Api::V1::SurveysController < ApplicationController
 
   def create
     @survey = Survey.new(survey_params)
-  
+
     if @survey.save
 
       @choices = @survey.choices.build([{content: params["choiceAContent"], winner: params["choiceAWinnerValue"]}, {content: params["choiceBContent"], winner: params["choiceBWinnerValue"]}, {content: params["choiceCContent"], winner: params["choiceCWinnerValue"]}, {content: params["choiceDContent"], winner: params["choiceDWinnerValue"]}])

@@ -1,5 +1,8 @@
 class Api::V1::ResponsesController < ApplicationController
 
+
+
+
   def emails
     #byebug
     UserMailer.with(survey_name: params["survey_name"], respondent_email: params["respondent_email"], response_link: params["response_link"]).invite_response.deliver_now
@@ -45,7 +48,7 @@ class Api::V1::ResponsesController < ApplicationController
   end
 
   def update
-    byebug
+
   end
 
 
