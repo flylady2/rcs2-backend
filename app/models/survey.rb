@@ -12,6 +12,7 @@ class Survey < ApplicationRecord
 
 
   def calculate_winner
+    
     survey = self
     if survey.choices.length > 1
       choice_rankings = []
@@ -196,18 +197,35 @@ class Survey < ApplicationRecord
 
 
   def declare_winner(winning_array, survey)
+    #byebug
     choice_id = winning_array[0]["choice_id"]
     @choice = Choice.find(choice_id)
+    @survey = survey
+    choice = @choice
+
+    @survey.send_message(choice)
     params = { winner: true}
     @choice.update(params)
+
   end
 
   def last_man_standing(survey)
+
     choice_id = survey.choices[0]["id"]
     @choice = Choice.find(choice_id)
-    byebug
+
     params = { winner: true}
     @choice.update(params)
+    choice = @choice
+    @survey = survey
+    @survey.send_message(choice)
+  end
+
+
+  def send_message(choice)
+    #byebug
+    survey = self
+    UserMailer.with(survey: survey, winning_choice: choice, user_email: survey.user_email).announce_winner.deliver_now
   end
 
 

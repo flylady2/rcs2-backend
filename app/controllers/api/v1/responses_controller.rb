@@ -1,5 +1,14 @@
 class Api::V1::ResponsesController < ApplicationController
 
+
+
+
+  def emails
+    #byebug
+    UserMailer.with(survey_name: params["survey_name"], respondent_email: params["respondent_email"], response_link: params["response_link"]).invite_response.deliver_now
+  end
+
+
   def index
     @responses = Response.all
     options = {
@@ -12,7 +21,7 @@ class Api::V1::ResponsesController < ApplicationController
   def create
     if params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)#nested uner responses
       @response = @survey.responses.new(response_params)
-      
+
     end
     @response.save
     #byebug
@@ -39,7 +48,7 @@ class Api::V1::ResponsesController < ApplicationController
   end
 
   def update
-    byebug
+
   end
 
 
