@@ -14,6 +14,7 @@ class UserMailer < ApplicationMailer
     @survey_name = params[:survey_name]
     @respondent_email = params[:respondent_email]
     @response_link = params[:response_link]
+    @token = params[:token]
     mail(to: @respondent_email, subject: "Survey Response Needed")
   end
 

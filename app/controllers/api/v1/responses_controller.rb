@@ -4,9 +4,37 @@ class Api::V1::ResponsesController < ApplicationController
 
 
   def emails
-    #byebug
-    UserMailer.with(survey_name: params["survey_name"], respondent_email: params["respondent_email"], response_link: params["response_link"]).invite_response.deliver_now
+    token = encrypt(params[:email])
+
+
+
+    UserMailer.with(survey_name: params["survey_name"], respondent_email: params["email"], response_link: params["response_link"], token: token).invite_response.deliver_now
   end
+
+  def encrypt(email)
+    len = ActiveSupport::MessageEncryptor.key_len
+    salt = rand(9999999999).to_s.center(32, rand(9).to_s)
+    key = ActiveSupport::KeyGenerator.new('password').generate_key(salt, len)
+    crypt = ActiveSupport::MessageEncryptor.new(key)
+    encrypted_email = crypt.encrypt_and_sign(email)
+    token= "#{salt}$$#{encrypted_email}"
+
+
+
+
+  end
+
+  def decrypt(token)
+
+    salt2, data = token.split("$$")
+
+    len = ActiveSupport::MessageEncryptor.key_len
+    key2 = ActiveSupport::KeyGenerator.new('password').generate_key(salt2, len)
+    crypt2 = ActiveSupport::MessageEncryptor.new(key2)
+
+    email = crypt2.decrypt_and_verify(data)
+  end
+
 
 
   def index
@@ -19,7 +47,9 @@ class Api::V1::ResponsesController < ApplicationController
   end
 
   def create
-    if params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)#nested uner responses
+    email = decrypt(params[:token])
+
+    if email == params[:respondent_email] && params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)#nested uner responses
       @response = @survey.responses.new(response_params)
 
     end

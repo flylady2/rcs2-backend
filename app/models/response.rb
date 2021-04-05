@@ -3,9 +3,12 @@ class Response < ApplicationRecord
   belongs_to :survey
   has_many :rankings, dependent: :destroy
   has_many :choices, through: :rankings
-  
+
 
   accepts_nested_attributes_for :rankings
+
+
+
 
   def response_count
     @survey = self.survey
