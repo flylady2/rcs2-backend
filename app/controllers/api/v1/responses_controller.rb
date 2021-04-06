@@ -4,6 +4,7 @@ class Api::V1::ResponsesController < ApplicationController
 
 
   def emails
+  
     token = encrypt(params[:email])
 
 

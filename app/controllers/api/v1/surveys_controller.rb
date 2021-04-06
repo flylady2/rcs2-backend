@@ -1,7 +1,7 @@
 class Api::V1::SurveysController < ApplicationController
 
   def trigger
-    
+
     id = params["id"]
     @survey = Survey.find(id)
     @survey.calculate_winner
@@ -18,6 +18,7 @@ class Api::V1::SurveysController < ApplicationController
   end
 
   def create
+    
     @survey = Survey.new(survey_params)
 
     if @survey.save
