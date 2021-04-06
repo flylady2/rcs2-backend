@@ -19,12 +19,14 @@ class Api::V1::SurveysController < ApplicationController
 
   def create
 
+
     choices = []
     count = 0
     while count < params[:choices].count
       choices.push({content: params[:choices][count]["content"], winner: false})
       count += 1
     end
+
 
     @survey = Survey.new(survey_params)
 
