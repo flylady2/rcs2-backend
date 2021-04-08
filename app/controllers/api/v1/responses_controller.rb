@@ -4,12 +4,21 @@ class Api::V1::ResponsesController < ApplicationController
 
 
   def emails
+
+    #emailArray = []
+  #  count = 0
+  #  while count < params["_json"].count
+  #    emailArray.push(params["_json"][count])
+  #    count += 1
+  #  end
   
     token = encrypt(params[:email])
-
-
-
-    UserMailer.with(survey_name: params["survey_name"], respondent_email: params["email"], response_link: params["response_link"], token: token).invite_response.deliver_now
+    count = 0
+    while count < params["_json"].count
+      token = encrypt(params["_json"][count]["email"])
+      UserMailer.with(survey_name: params["_json"][count]["survey_name"], respondent_email: params["_json"][count]["email"], response_link: params["_json"][count]["response_link"], token: token).invite_response.deliver_now
+      count += 1
+    end
   end
 
   def encrypt(email)
