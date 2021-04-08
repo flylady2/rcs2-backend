@@ -45,6 +45,11 @@ class Api::V1::SurveysController < ApplicationController
     end
   end
 
+  def destroy
+    @survey = Survey.find(params[:id])
+    @survey.destroy
+  end
+
   private
     def survey_params
       params.require(:survey).permit(:name, :user_email, :threshold,  choices_attributes: [:content, :winner, :survey_id])
