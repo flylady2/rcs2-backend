@@ -4,6 +4,7 @@ class Response < ApplicationRecord
   has_many :rankings, dependent: :destroy
   has_many :choices, through: :rankings
 
+  validates :token, uniqueness: true
 
   accepts_nested_attributes_for :rankings
 
