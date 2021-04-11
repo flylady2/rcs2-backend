@@ -48,6 +48,8 @@ class Api::V1::SurveysController < ApplicationController
   def destroy
     @survey = Survey.find(params[:id])
     @survey.destroy
+    render json: SurveySerializer.new(@survey), status: :accepted
+
   end
 
   private
