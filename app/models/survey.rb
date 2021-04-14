@@ -12,11 +12,11 @@ class Survey < ApplicationRecord
 
 
   def calculate_winner
-    
     survey = self
+
     if survey.choices.length > 1
       choice_rankings = []
-      self.choices.each { |choice|
+      survey.choices.each { |choice|
         choice_rankings.push(choice.rankings)}
       extracting_firsts(choice_rankings, survey)
     else
@@ -34,23 +34,24 @@ class Survey < ApplicationRecord
   def test_for_majority(first_choice_rankings, choice_rankings, survey)
     winning_array = []
     first_choice_rankings.each { |first_choice_ranking|
-    if first_choice_ranking.length > 0.5 * self.responses.count
-      winning_array.push(first_choice_ranking[0])
-    end}
+      if first_choice_ranking.length > 0.5 * self.responses.count
+        winning_array.push(first_choice_ranking[0])
+      end
+    }
     if winning_array.length == 0
-      remove_least_popular_choice(first_choice_rankings, choice_rankings, survey)
+      identify_choices_with_no_first_place_votes(first_choice_rankings, choice_rankings, survey)
     else
       declare_winner(winning_array, survey)
     end
   end
 
-  def remove_least_popular_choice(first_choice_rankings, choice_rankings, survey)
-    first_choice_rankings_lengths = []
-    first_choice_rankings.each { |choice_ranking|
-      first_choice_rankings_lengths.push(choice_ranking.length)}
-    #byebug
+  def identify_choices_with_no_first_place_votes(first_choice_rankings, choice_rankings, survey)
+#    first_choice_rankings_lengths = []
+#    first_choice_rankings.each { |choice_ranking|
+#      first_choice_rankings_lengths.push(choice_ranking.length)}
+
     #code to deal with more than one having minimum value
-    minimum_value = first_choice_rankings_lengths.min
+    #minimum_value = first_choice_rankings_lengths.min
     #old code (aas of 2.26.21)
   #  first_choice_rankings.each { |ranking|
   #    if ranking.length == 0
@@ -64,21 +65,48 @@ class Survey < ApplicationRecord
     #  end
     #  }
     #new code as of 2.26.21
-    rankings_with_minimum_value_length = []
+    #rankings_with_minimum_value_length = []
+    choices_with_no_first_place_votes = []
     first_choice_rankings.each { |ranking|
       if ranking.length == 0
-        identify_and_destroy_choice_with_no_first_choices(first_choice_rankings, survey)
-      elsif
-        ranking.length == minimum_value
+        choices_with_no_first_place_votes.push(ranking)
+        destroy_choice_with_no_first_choices(first_choice_rankings, survey)
+      end
+    }
+    if choices_with_no_first_place_votes.length == 0
+      identify_choices_with_fewest_first_place_votes(first_choice_rankings, survey)
+    end
+
+  end
+
+  def identify_choices_with_fewest_first_place_votes(first_choice_rankings, survey)
+
+    first_choice_rankings_lengths = []
+    first_choice_rankings.each { |choice_ranking|
+      first_choice_rankings_lengths.push(choice_ranking.length)}
+
+    rankings_with_minimum_value_length = []
+
+    minimum_value = first_choice_rankings_lengths.min
+
+    first_choice_rankings.each { |ranking|
+      if ranking.length == minimum_value
         rankings_with_minimum_value_length.push(ranking)
       end
     }
-    #need to identify the choices
-    choices_with_minimum_value_first_place_votes = []
-    rankings_with_minimum_value_length.each { |ranking|
-      choices_with_minimum_value_first_place_votes.push(Choice.find(ranking[0].choice_id))}
-    #byebug
-    count_number_of_fourth_place_votes(choices_with_minimum_value_first_place_votes)
+    
+    if rankings_with_minimum_value_length.count > 1
+      #need to identify the choices
+      choices_with_minimum_value_first_place_votes = []
+      rankings_with_minimum_value_length.each { |ranking|
+        choices_with_minimum_value_first_place_votes.push(Choice.find(ranking[0].choice_id))}
+
+      count_number_of_fourth_place_votes(choices_with_minimum_value_first_place_votes)
+    else
+      choice = Choice.find(rankings_with_minimum_value_length[0][0].choice_id)
+      remove_least_popular_choice_and_update_rankings(choice)
+
+    end
 
 
   end
@@ -121,28 +149,34 @@ class Survey < ApplicationRecord
 
   #need to compare survey.choices with first_choice_rankings
   #process of elimination
-  def identify_and_destroy_choice_with_no_first_choices(first_choice_rankings, survey)
-    #byebug
+  def destroy_choice_with_no_first_choices(first_choice_rankings, survey)
+
 
 
     first_choice_ids = []
     choice_ids = []
+    #first_choice_rankings only have choices with first choices
     first_choice_rankings.each { |ranking|
       if ranking[0]
+        #extracting choid_id
         first_choice_ids.push(ranking[0]["choice_id"])
       end}
 
     survey.choices.each { |choice|
         choice_ids.push(choice.id)}
-    #byebug
+
+    #remove choices with first place votes
     least_popular_choice_id = choice_ids - first_choice_ids
     #choice = Choice.find(least_popular_choice_id[0])
     least_popular_choice_id.each { |id|
       choice = Choice.find(id)
       survey_id = choice.survey_id
       choice.destroy
-      @survey = Survey.find(survey_id)
-      @survey.calculate_winner}
+      #@survey = Survey.find(survey_id)
+      #@survey.calculate_winner
+    }
+    @survey = Survey.find(survey.id)
+    @survey.calculate_winner
 
 
   end
