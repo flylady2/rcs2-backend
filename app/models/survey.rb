@@ -39,69 +39,53 @@ class Survey < ApplicationRecord
       end
     }
     if winning_array.length == 0
-      identify_choices_with_no_first_place_votes(first_choice_rankings, choice_rankings, survey)
+      identify_choices_with_first_place_votes(first_choice_rankings, survey)
     else
       declare_winner(winning_array, survey)
     end
   end
 
-  def identify_choices_with_no_first_place_votes(first_choice_rankings, choice_rankings, survey)
-#    first_choice_rankings_lengths = []
-#    first_choice_rankings.each { |choice_ranking|
-#      first_choice_rankings_lengths.push(choice_ranking.length)}
+  def identify_choices_with_first_place_votes(first_choice_rankings, survey)
 
-    #code to deal with more than one having minimum value
-    #minimum_value = first_choice_rankings_lengths.min
-    #old code (aas of 2.26.21)
-  #  first_choice_rankings.each { |ranking|
-  #    if ranking.length == 0
-  #      identify_and_destroy_choice_with_no_first_choices(first_choice_rankings, survey)
-  #    elsif
-  #      ranking.length == minimum_value
-  #      identify_and_destroy_choice_with_minimum_value_first_choices(ranking, survey)
 
-    #  if ranking.length == minimum_value
-    #    identify_and_destroy_choice_with_minimum_value_first_choices(first_choice_rankings, survey)
-    #  end
-    #  }
-    #new code as of 2.26.21
-    #rankings_with_minimum_value_length = []
-    choices_with_no_first_place_votes = []
+    choices_with_first_place_votes = []
     first_choice_rankings.each { |ranking|
-      if ranking.length == 0
-        choices_with_no_first_place_votes.push(ranking)
-        destroy_choice_with_no_first_choices(first_choice_rankings, survey)
+      if ranking.count != 0
+        choices_with_first_place_votes.push(ranking)
       end
     }
-    if choices_with_no_first_place_votes.length == 0
-      identify_choices_with_fewest_first_place_votes(first_choice_rankings, survey)
-    end
+
+  #  if choices_with_no_first_place_votes.length == 0
+  #    identify_choices_with_fewest_first_place_votes(first_choice_rankings, survey)
+    destroy_choice_with_no_first_choices(choices_with_first_place_votes, survey)
+  #  end
+    identify_choices_with_fewest_first_place_votes(choices_with_first_place_votes, survey)
 
   end
 
-  def identify_choices_with_fewest_first_place_votes(first_choice_rankings, survey)
+  def identify_choices_with_fewest_first_place_votes(choices_with_first_place_votes, survey)
 
     first_choice_rankings_lengths = []
-    first_choice_rankings.each { |choice_ranking|
+    choices_with_first_place_votes.each { |choice_ranking|
       first_choice_rankings_lengths.push(choice_ranking.length)}
 
     rankings_with_minimum_value_length = []
 
     minimum_value = first_choice_rankings_lengths.min
 
-    first_choice_rankings.each { |ranking|
+    choices_with_first_place_votes.each { |ranking|
       if ranking.length == minimum_value
         rankings_with_minimum_value_length.push(ranking)
       end
     }
-    
+
     if rankings_with_minimum_value_length.count > 1
       #need to identify the choices
       choices_with_minimum_value_first_place_votes = []
       rankings_with_minimum_value_length.each { |ranking|
         choices_with_minimum_value_first_place_votes.push(Choice.find(ranking[0].choice_id))}
 
-      count_number_of_fourth_place_votes(choices_with_minimum_value_first_place_votes)
+      calculate_scores(choices_with_minimum_value_first_place_votes, survey)
     else
       choice = Choice.find(rankings_with_minimum_value_length[0][0].choice_id)
       remove_least_popular_choice_and_update_rankings(choice)
@@ -111,23 +95,44 @@ class Survey < ApplicationRecord
 
   end
 
-  def count_number_of_fourth_place_votes(choices)
+  def calculate_scores(choices, survey)
+
+
+
     choice_rankings = []
     choices.each { |choice|
       choice_rankings.push(choice.rankings)}
 
-    fourth_place_choice_rankings = []
-    choice_rankings.each { |choice_ranking|
-      fourth_place_choice_rankings.push(choice_ranking.where(value: 4))}
 
-    fourth_place_choice_rankings_lengths = []
-    fourth_place_choice_rankings.each { |choice_ranking|
-      fourth_place_choice_rankings_lengths.push(choice_ranking.length)}
+    ranking_values = choice_rankings.map {|choice_ranking|
+      choice_ranking.map {|ranking|
+        ranking.value}}
 
-    maximum_value = fourth_place_choice_rankings_lengths.max
-    index = fourth_place_choice_rankings_lengths.index(maximum_value)
-    least_popular_choice = choices[index]
-    remove_least_popular_choice_and_update_rankings(least_popular_choice)
+    summed_values = ranking_values.map {|values|
+      values.sum}
+
+    highest_score = summed_values.max
+
+    position = summed_values.index(highest_score)
+
+    choice_to_be_deleted = choices[position]
+
+    remove_least_popular_choice_and_update_rankings(choice_to_be_deleted)
+
+  #  last_place = survey.choices.count
+
+  #  fourth_place_choice_rankings = []
+  #  choice_rankings.each { |choice_ranking|
+  #    fourth_place_choice_rankings.push(choice_ranking.where(value: #last_place))}
+
+    #fourth_place_choice_rankings_lengths = []
+  #  fourth_place_choice_rankings.each { |choice_ranking|
+    #  fourth_place_choice_rankings_lengths.push(choice_ranking.length)}
+
+  #  maximum_value = fourth_place_choice_rankings_lengths.max
+  #  index = fourth_place_choice_rankings_lengths.index(maximum_value)
+  #  least_popular_choice = choices[index]
+    #remove_least_popular_choice_and_update_rankings(least_popular_choice)
     #byebug
 
 
@@ -149,14 +154,14 @@ class Survey < ApplicationRecord
 
   #need to compare survey.choices with first_choice_rankings
   #process of elimination
-  def destroy_choice_with_no_first_choices(first_choice_rankings, survey)
+  def destroy_choice_with_no_first_choices(choices_with_first_place_votes, survey)
 
 
 
     first_choice_ids = []
     choice_ids = []
     #first_choice_rankings only have choices with first choices
-    first_choice_rankings.each { |ranking|
+    choices_with_first_place_votes.each { |ranking|
       if ranking[0]
         #extracting choid_id
         first_choice_ids.push(ranking[0]["choice_id"])
@@ -166,22 +171,20 @@ class Survey < ApplicationRecord
         choice_ids.push(choice.id)}
 
     #remove choices with first place votes
-    least_popular_choice_id = choice_ids - first_choice_ids
+    choices_with_no_first_place_votes_ids = choice_ids - first_choice_ids
     #choice = Choice.find(least_popular_choice_id[0])
-    least_popular_choice_id.each { |id|
+    choices_with_no_first_place_votes_ids.each { |id|
       choice = Choice.find(id)
       survey_id = choice.survey_id
       choice.destroy
       #@survey = Survey.find(survey_id)
       #@survey.calculate_winner
     }
-    @survey = Survey.find(survey.id)
-    @survey.calculate_winner
 
 
   end
 
-  def identify_and_destroy_choice_with_minimum_value_first_choices(ranking, survey)
+  #def identify_and_destroy_choice_with_minimum_value_first_choices(ranking, survey)
     #byebug
     #ids_of_responses_to_be_updated = []
     #rankings_for_least_popular_choice.each { |ranking|
@@ -190,21 +193,21 @@ class Survey < ApplicationRecord
 
     #identify and delete choice and associated rankings
     #byebug
-    ids_of_responses_to_be_updated = []
-    ranking.each {|ranking|
-      ids_of_responses_to_be_updated.push(ranking.response_id)}
-    choice_id = ranking[0].choice_id
-    @choice = Choice.find(choice_id)
+  #  ids_of_responses_to_be_updated = []
+  #  ranking.each {|ranking|
+#      ids_of_responses_to_be_updated.push(ranking.response_id)}
+#    choice_id = ranking[0].choice_id
+#    @choice = Choice.find(choice_id)
 
-    @choice.destroy
-    create_params(ids_of_responses_to_be_updated, survey)
+#    @choice.destroy
+#    create_params(ids_of_responses_to_be_updated, survey)
 
     #previous code
   #  ids_of_responses_to_be_updated.each { |id|
   #    response = Response.find(id)
   #    responses_to_be_updated.push(response)}
   #  create_params(responses_to_be_updated)
-  end
+#  end
 
   #create params for updating responses rankings
   def create_params(ids_of_responses_to_be_updated)
