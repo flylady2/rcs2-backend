@@ -18,7 +18,7 @@ class Api::V1::SurveysController < ApplicationController
   end
 
   def create
-
+    
 
     choices = []
     count = 0

@@ -51,7 +51,7 @@ class Api::V1::ResponsesController < ApplicationController
 
   def create
 
-    #email = decrypt(params[:token])
+    email = decrypt(params[:token])
     if params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)
 
 
@@ -62,12 +62,13 @@ class Api::V1::ResponsesController < ApplicationController
         rankings.push({choice_id: params["rankedChoice#{count}"], value: count})
         count += 1
       end
-    #if email == params[:respondent_email] && params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)#nested uner responses
+    end
+    if email == params[:respondent_email] && params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)#nested uner responses
       @response = @survey.responses.new(response_params)
 
     end
     @response.save
-  
+
     if @response
       @rankings = @response.rankings.build(rankings)
 
