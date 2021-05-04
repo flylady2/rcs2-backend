@@ -4,23 +4,23 @@ class Survey < ApplicationRecord
   has_many :choices, dependent: :destroy
   has_many :responses, dependent: :destroy
   has_many :rankings, through: :responses
-  #not sure about this one:
   has_many :rankings, through: :choices
 
   accepts_nested_attributes_for :choices
 
-
-
-  def calculate_winner
+  def collect_choice_rankings
     survey = self
 
+    #if there are more than one choice
     if survey.choices.length > 1
       choice_rankings = []
       survey.choices.each { |choice|
         choice_rankings.push(choice.rankings)}
       extracting_firsts(choice_rankings, survey)
     else
-      last_man_standing(survey)
+      #if only one choice remains
+      choice_id = survey.choices[0]["id"]
+      declare_winner(choice_id, survey)
     end
   end
 
@@ -28,10 +28,11 @@ class Survey < ApplicationRecord
     first_choice_rankings = []
     choice_rankings.each { |choice_ranking|
       first_choice_rankings.push(choice_ranking.where(value: 1))}
-     test_for_majority(first_choice_rankings, choice_rankings, survey)
+
+     test_for_majority(first_choice_rankings, survey)
   end
 
-  def test_for_majority(first_choice_rankings, choice_rankings, survey)
+  def test_for_majority(first_choice_rankings, survey)
     winning_array = []
     first_choice_rankings.each { |first_choice_ranking|
       if first_choice_ranking.length > 0.5 * self.responses.count
@@ -41,7 +42,8 @@ class Survey < ApplicationRecord
     if winning_array.length == 0
       identify_choices_with_first_place_votes(first_choice_rankings, survey)
     else
-      declare_winner(winning_array, survey)
+      choice_id = winning_array[0]["choice_id"]
+      declare_winner(choice_id, survey)
     end
   end
 
@@ -146,7 +148,7 @@ class Survey < ApplicationRecord
     ids_of_responses_to_be_updated = []
     rankings_to_be_updated.each {|ranking|
       ids_of_responses_to_be_updated.push(ranking.response_id)}
-    #byebug
+
     choice.destroy
     create_params(ids_of_responses_to_be_updated)
 
@@ -229,34 +231,34 @@ class Survey < ApplicationRecord
     response = responses_to_be_updated[0]
     survey_id = response.survey_id
     @survey = Survey.find(survey_id)
-    @survey.calculate_winner
-    end
+    @survey.collect_choice_rankings
+  end
 
 
-  def declare_winner(winning_array, survey)
+  def declare_winner(choice_id, survey)
     #byebug
-    choice_id = winning_array[0]["choice_id"]
+    #choice_id = winning_array[0]["choice_id"]
     @choice = Choice.find(choice_id)
-    @survey = survey
-    choice = @choice
-
-    @survey.send_message(choice)
     params = { winner: true}
     @choice.update(params)
+    @survey = survey
+    choice = @choice
+    @survey.send_message(choice)
 
   end
 
-  def last_man_standing(survey)
+#  def last_man_standing(survey)
 
-    choice_id = survey.choices[0]["id"]
-    @choice = Choice.find(choice_id)
+#    choice_id = survey.choices[0]["id"]
+#    @choice = Choice.find(choice_id)
 
-    params = { winner: true}
-    @choice.update(params)
-    choice = @choice
-    @survey = survey
-    @survey.send_message(choice)
-  end
+
+#    params = { winner: true}
+#    @choice.update(params)
+#    choice = @choice
+#    @survey = survey
+#    @survey.send_message(choice)
+#  end
 
 
   def send_message(choice)

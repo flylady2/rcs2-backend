@@ -16,7 +16,7 @@ class Response < ApplicationRecord
 
     number_of_responses = @survey.responses.count
     if number_of_responses >= @survey.threshold
-      @survey.calculate_winner
+      @survey.collect_choice_rankings
     end
   end
 
