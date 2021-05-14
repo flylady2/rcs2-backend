@@ -18,7 +18,7 @@ class Api::V1::SurveysController < ApplicationController
   end
 
   def create
-    
+
 
     choices = []
     count = 0
@@ -44,6 +44,8 @@ class Api::V1::SurveysController < ApplicationController
       render json: { errors: @survey.errors.full_messages}, status: :unprocessable_entity
     end
   end
+
+
 
   def destroy
     @survey = Survey.find(params[:id])

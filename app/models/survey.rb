@@ -11,12 +11,12 @@ class Survey < ApplicationRecord
   def collect_choice_rankings
     survey = self
 
-    #if there are more than one choice
+    #if there is more than one choice
     if survey.choices.length > 1
       choice_rankings = []
       survey.choices.each { |choice|
         choice_rankings.push(choice.rankings)}
-      extracting_firsts(choice_rankings, survey)
+      extract_firsts(choice_rankings, survey)
     else
       #if only one choice remains
       choice_id = survey.choices[0]["id"]
@@ -24,7 +24,7 @@ class Survey < ApplicationRecord
     end
   end
 
-  def extracting_firsts(choice_rankings, survey)
+  def extract_firsts(choice_rankings, survey)
     first_choice_rankings = []
     choice_rankings.each { |choice_ranking|
       first_choice_rankings.push(choice_ranking.where(value: 1))}
@@ -57,10 +57,8 @@ class Survey < ApplicationRecord
       end
     }
 
-  #  if choices_with_no_first_place_votes.length == 0
-  #    identify_choices_with_fewest_first_place_votes(first_choice_rankings, survey)
-    destroy_choice_with_no_first_choices(choices_with_first_place_votes, survey)
-  #  end
+    identify_and_destroy_choices_with_no_first_place_votes(choices_with_first_place_votes, survey)
+
     identify_choices_with_fewest_first_place_votes(choices_with_first_place_votes, survey)
 
   end
@@ -90,21 +88,16 @@ class Survey < ApplicationRecord
       calculate_scores(choices_with_minimum_value_first_place_votes, survey)
     else
       choice = Choice.find(rankings_with_minimum_value_length[0][0].choice_id)
-      remove_least_popular_choice_and_update_rankings(choice)
+      destroy_choice(choice)
 
     end
-
-
   end
 
   def calculate_scores(choices, survey)
 
-
-
     choice_rankings = []
     choices.each { |choice|
       choice_rankings.push(choice.rankings)}
-
 
     ranking_values = choice_rankings.map {|choice_ranking|
       choice_ranking.map {|ranking|
@@ -119,53 +112,33 @@ class Survey < ApplicationRecord
 
     choice_to_be_deleted = choices[position]
 
-    remove_least_popular_choice_and_update_rankings(choice_to_be_deleted)
-
-  #  last_place = survey.choices.count
-
-  #  fourth_place_choice_rankings = []
-  #  choice_rankings.each { |choice_ranking|
-  #    fourth_place_choice_rankings.push(choice_ranking.where(value: #last_place))}
-
-    #fourth_place_choice_rankings_lengths = []
-  #  fourth_place_choice_rankings.each { |choice_ranking|
-    #  fourth_place_choice_rankings_lengths.push(choice_ranking.length)}
-
-  #  maximum_value = fourth_place_choice_rankings_lengths.max
-  #  index = fourth_place_choice_rankings_lengths.index(maximum_value)
-  #  least_popular_choice = choices[index]
-    #remove_least_popular_choice_and_update_rankings(least_popular_choice)
-    #byebug
-
+    destroy_choice(choice_to_be_deleted)
 
   end
 
-  def remove_least_popular_choice_and_update_rankings(choice)
-    #byebug
+  def destroy_choice(choice)
+
     rankings_to_be_updated = choice.rankings.where(value: 1)
 
-    #byebug
     ids_of_responses_to_be_updated = []
     rankings_to_be_updated.each {|ranking|
       ids_of_responses_to_be_updated.push(ranking.response_id)}
 
     choice.destroy
-    create_params(ids_of_responses_to_be_updated)
+    update_rankings(ids_of_responses_to_be_updated)
 
   end
 
   #need to compare survey.choices with first_choice_rankings
   #process of elimination
-  def destroy_choice_with_no_first_choices(choices_with_first_place_votes, survey)
-
-
+  def identify_and_destroy_choices_with_no_first_place_votes(choices_with_first_place_votes, survey)
 
     first_choice_ids = []
     choice_ids = []
     #first_choice_rankings only have choices with first choices
     choices_with_first_place_votes.each { |ranking|
       if ranking[0]
-        #extracting choid_id
+        #extracting choice_id
         first_choice_ids.push(ranking[0]["choice_id"])
       end}
 
@@ -179,45 +152,17 @@ class Survey < ApplicationRecord
       choice = Choice.find(id)
       survey_id = choice.survey_id
       choice.destroy
-      #@survey = Survey.find(survey_id)
-      #@survey.calculate_winner
+
     }
-
-
   end
 
-  #def identify_and_destroy_choice_with_minimum_value_first_choices(ranking, survey)
-    #byebug
-    #ids_of_responses_to_be_updated = []
-    #rankings_for_least_popular_choice.each { |ranking|
-    #  response_id = ranking.response_id
-    #  ids_of_responses_to_be_updated.push(response_id)}
 
-    #identify and delete choice and associated rankings
-    #byebug
-  #  ids_of_responses_to_be_updated = []
-  #  ranking.each {|ranking|
-#      ids_of_responses_to_be_updated.push(ranking.response_id)}
-#    choice_id = ranking[0].choice_id
-#    @choice = Choice.find(choice_id)
+  def update_rankings(ids_of_responses_to_be_updated)
 
-#    @choice.destroy
-#    create_params(ids_of_responses_to_be_updated, survey)
-
-    #previous code
-  #  ids_of_responses_to_be_updated.each { |id|
-  #    response = Response.find(id)
-  #    responses_to_be_updated.push(response)}
-  #  create_params(responses_to_be_updated)
-#  end
-
-  #create params for updating responses rankings
-  def create_params(ids_of_responses_to_be_updated)
-      #byebug
       responses_to_be_updated = []
       ids_of_responses_to_be_updated.each {|id|
         responses_to_be_updated.push(Response.find(id))}
-      #byebug
+
       rankings_to_be_updated = []
       responses_to_be_updated.each { |response|
         response.rankings.each { |ranking|
@@ -236,8 +181,7 @@ class Survey < ApplicationRecord
 
 
   def declare_winner(choice_id, survey)
-    #byebug
-    #choice_id = winning_array[0]["choice_id"]
+
     @choice = Choice.find(choice_id)
     params = { winner: true}
     @choice.update(params)
@@ -247,22 +191,8 @@ class Survey < ApplicationRecord
 
   end
 
-#  def last_man_standing(survey)
-
-#    choice_id = survey.choices[0]["id"]
-#    @choice = Choice.find(choice_id)
-
-
-#    params = { winner: true}
-#    @choice.update(params)
-#    choice = @choice
-#    @survey = survey
-#    @survey.send_message(choice)
-#  end
-
-
   def send_message(choice)
-    #byebug
+    
     survey = self
     UserMailer.with(survey: survey, winning_choice: choice, user_email: survey.user_email).announce_winner.deliver_now
   end

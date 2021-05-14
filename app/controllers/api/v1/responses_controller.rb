@@ -46,7 +46,7 @@ class Api::V1::ResponsesController < ApplicationController
       include: [:choices, :rankings]
     }
     render json: { responses: ResponseSerializer.new(@responses, options)}
-    #byebug
+  
   end
 
   def create
@@ -63,7 +63,8 @@ class Api::V1::ResponsesController < ApplicationController
         count += 1
       end
     end
-    if email == params[:respondent_email] && params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)#nested uner responses
+    if email == params[:respondent_email] && params[:survey_id] && @survey = Survey.find_by_id(params[:survey_id].to_i)
+
       @response = @survey.responses.new(response_params)
 
     end
@@ -71,9 +72,6 @@ class Api::V1::ResponsesController < ApplicationController
 
     if @response
       @rankings = @response.rankings.build(rankings)
-
-      #([{value: params["ranking1"].to_i, choice_id: params["ranking1_choiceId"].to_i}, {value: params["ranking2"].to_i, choice_id: params["ranking2_choiceId"].to_i}, {value: params["ranking3"].to_i, choice_id: params["ranking3_choiceId"].to_i}, {value: params["ranking4"].to_i, choice_id: params["ranking4_choiceId"].to_i}])
-
 
       @rankings.each {|ranking|
         ranking.save}
