@@ -3,7 +3,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       post '/surveys/trigger', to: 'surveys#trigger'
+      
       post '/responses/emails', to: 'responses#emails'
+
       resources :surveys, only: [:index, :new, :create, :show, :destroy] do
         resources :choices, only: [:new, :create]
         resources :responses, only: [:index, :new, :create, :show, :update] do

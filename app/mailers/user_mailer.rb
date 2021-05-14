@@ -1,4 +1,5 @@
 class UserMailer < ApplicationMailer
+  #default "Message-ID" => lambda {"<SecureRandom.uuid}}@{ActionMailer::Base.smtp_settings[:domain]}>"}
 
   def announce_winner
     @choice = params[:winning_choice]
@@ -10,7 +11,7 @@ class UserMailer < ApplicationMailer
   end
 
   def invite_response
-  #byebug
+
     @survey_name = params[:survey_name]
     @respondent_email = params[:respondent_email]
     @response_link = params[:response_link]
