@@ -7,7 +7,7 @@ This app allows users to create surveys that they want specific people to respon
 
 **Getting Started**
 
-This app has a Rails backend that uses Ruby 2.7.0, Rails 6.0.3.6 and PostgreSql and a React frontend created with [Create React App](https://github.com/facebook/create-react-app) and styled with Bootstrap https://getbootstrap.com/. To work with this app on your machine, fork this backend repo and the frontend repo from https://github.com/flylady2/rcs2-frontend and clone them down.  `cd` into the backend and run `bundle install`.  Make sure to have a Postgres server running. Then run `rake db:create` and `rake db:migrate` and start your rails server with the `rails s` command.  The rails server will automatically use port 3000 and the code in the front end assumes that it will.  In another pane of your terminal, `cd` into the frontend.  Use the command `npm start` to run the app in your browser, preferably Chrome.  The frontend server will inform you that port 3000 is being used and ask if you want it to use another port.  Reply yes.  Typically it wil use 3001.  Open [http://localhost:3001](http://localhost:3001) to view it in the browser.  Got to [http://localhost:3001/user/surveys](http://localhost:3001/user/surveys) to see links to the surveys you've created and to click a link to create a new survey.
+This app has a Rails backend that uses Ruby 2.7.0, Rails 6.0.3.6 and PostgreSql and a React frontend created with [Create React App](https://github.com/facebook/create-react-app) and styled with Bootstrap https://getbootstrap.com/. To work with this app on your machine, fork this backend repo and the frontend repo from https://github.com/flylady2/rcs2-frontend and clone them down.  `cd` into the backend and run `bundle install`.  Make sure to have a Postgres server running. Then run `rake db:create` and `rake db:migrate` and start your rails server with the `rails s` command.  The rails server will automatically use port 3000 and the code in the front end assumes that it will.  In another pane of your terminal, `cd` into the frontend.  Use the command `npm start` to run the app in your browser, preferably Chrome.  The frontend server will inform you that port 3000 is being used and ask if you want it to use another port.  Reply yes.  Typically it wil use 3001.  Open [http://localhost:3001](http://localhost:3001) to view it in the browser.  Go to [http://localhost:3001/user/surveys](http://localhost:3001/user/surveys) to see links to the surveys you've created and to click a link to create a new survey.
 
 **Contributing**
 
@@ -16,5 +16,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/flylad
 **License**
 
 This app is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+**Logic behind Ranked Choice Survey winner determination:**
 
 ![Flowchart](Flowchartv5.png)
