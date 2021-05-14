@@ -1,7 +1,7 @@
 # README
 
 
-##**Ranked Choice Survey App**
+**Ranked Choice Survey App**
 
 This app allows users to create surveys that they want specific people to respond to; for example, you could survey members of your book club on what book they want to read next.  The app uses the principles of ranked choice voting to determine the winning choice.  (See flowchart at the bottom for the logic behind that process.)  The survey can include as many choices as the user desires. As part of survey creation, the user sets a threshold for the number of responses that must be received before the app calculates a winner.  The calculation can also be triggered by the user before the threshold is reached.  After the survey is created, the user uses the app to email the respondents a link to complete the survey.  The app also encrypts the respondent's email address into a token that the user includes in the email.  The respondent must put in the token and their email address when they fill out the response form.  For the response to be saved, the decrypted token must match the email address.  Tokens must also be unique.  These measures ensure that only responses from invited people are saved and they may only respond once. After the winner is calculated, the app emails the user to tell them which choice is the winner.
 
