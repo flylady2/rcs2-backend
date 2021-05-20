@@ -5,7 +5,7 @@ class Survey < ApplicationRecord
   has_many :responses, dependent: :destroy
   has_many :rankings, through: :responses
   has_many :rankings, through: :choices
-
+  validates :name, uniqueness: true
   accepts_nested_attributes_for :choices
 
   def collect_choice_rankings
@@ -125,7 +125,7 @@ class Survey < ApplicationRecord
       ids_of_responses_to_be_updated.push(ranking.response_id)}
 
     choice.destroy
-    update_rankings(ids_of_responses_to_be_updated)
+    update_responses(ids_of_responses_to_be_updated)
 
   end
 
@@ -157,13 +157,13 @@ class Survey < ApplicationRecord
   end
 
 
-  def update_rankings(ids_of_responses_to_be_updated)
+  def update_responses(ids_of_responses_to_be_updated)
 
       responses_to_be_updated = []
       ids_of_responses_to_be_updated.each {|id|
         responses_to_be_updated.push(Response.find(id))}
 
-      rankings_to_be_updated = []
+      #rankings_to_be_updated = []
       responses_to_be_updated.each { |response|
         response.rankings.each { |ranking|
           response_id = ranking.response_id
@@ -173,6 +173,7 @@ class Survey < ApplicationRecord
           params = { rankings_attributes: [{id: "#{ranking_id}", value: "#{ranking_value - 1}"}]}
           response.update(params)}
         }
+
     response = responses_to_be_updated[0]
     survey_id = response.survey_id
     @survey = Survey.find(survey_id)
@@ -192,7 +193,7 @@ class Survey < ApplicationRecord
   end
 
   def send_message(choice)
-    
+
     survey = self
     UserMailer.with(survey: survey, winning_choice: choice, user_email: survey.user_email).announce_winner.deliver_now
   end
