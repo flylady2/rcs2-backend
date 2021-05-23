@@ -4,7 +4,7 @@ class Response < ApplicationRecord
   has_many :rankings, dependent: :destroy
   has_many :choices, through: :rankings
 
-  #validates :token, uniqueness: true
+  validates :token, uniqueness: true
 
   accepts_nested_attributes_for :rankings
 
@@ -20,11 +20,6 @@ class Response < ApplicationRecord
     end
   end
 
-
-  #def ranking_attributes(ranking_params)
-      #ranking = Ranking.find(ranking_params)
-
-    #end
 
 
 
