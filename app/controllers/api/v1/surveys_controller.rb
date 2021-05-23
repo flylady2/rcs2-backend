@@ -4,7 +4,7 @@ class Api::V1::SurveysController < ApplicationController
 
     id = params["id"]
     @survey = Survey.find(id)
-    @survey.calculate_winner
+    @survey.collect_choice_rankings
   end
 
   def index
