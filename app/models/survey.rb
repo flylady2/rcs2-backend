@@ -9,6 +9,7 @@ class Survey < ApplicationRecord
   accepts_nested_attributes_for :choices
 
   def collect_choice_rankings
+    
     survey = self
 
     #if there is more than one choice
