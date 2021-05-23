@@ -16,11 +16,11 @@ class Survey < ApplicationRecord
       choice_rankings = []
       self.choices.each { |choice|
         choice_rankings.push(choice.rankings)}
-      self.extract_firsts(choice_rankings)
+      extract_firsts(choice_rankings)
     else
       #if only one choice remains
       choice_id = self.choices[0]["id"]
-      self.declare_winner(choice_id)
+      declare_winner(choice_id)
     end
   end
 
@@ -29,7 +29,7 @@ class Survey < ApplicationRecord
     choice_rankings.each { |choice_ranking|
       first_choice_rankings.push(choice_ranking.where(value: 1))}
 
-    self.test_for_majority(first_choice_rankings)
+    test_for_majority(first_choice_rankings)
   end
 
   def test_for_majority(first_choice_rankings)
@@ -40,10 +40,10 @@ class Survey < ApplicationRecord
       end
     }
     if winning_array.length == 0
-      self.identify_choices_with_first_place_votes(first_choice_rankings)
+      identify_choices_with_first_place_votes(first_choice_rankings)
     else
       choice_id = winning_array[0]["choice_id"]
-      self.declare_winner(choice_id)
+      declare_winner(choice_id)
     end
   end
 
@@ -57,9 +57,9 @@ class Survey < ApplicationRecord
       end
     }
 
-    self.identify_and_destroy_choices_with_no_first_place_votes(choices_with_first_place_votes)
+    identify_and_destroy_choices_with_no_first_place_votes(choices_with_first_place_votes)
 
-    self.identify_choices_with_fewest_first_place_votes(choices_with_first_place_votes)
+    identify_choices_with_fewest_first_place_votes(choices_with_first_place_votes)
 
   end
 
@@ -85,7 +85,7 @@ class Survey < ApplicationRecord
       rankings_with_minimum_value_length.each { |ranking|
         choices_with_minimum_value_first_place_votes.push(Choice.find(ranking[0].choice_id))}
 
-      self.calculate_scores(choices_with_minimum_value_first_place_votes)
+      calculate_scores(choices_with_minimum_value_first_place_votes)
     else
       choice = Choice.find(rankings_with_minimum_value_length[0][0].choice_id)
       destroy_choice(choice)
@@ -147,7 +147,7 @@ class Survey < ApplicationRecord
 
     #remove choices with first place votes
     choices_with_no_first_place_votes_ids = choice_ids - first_choice_ids
-    #
+    
     choices_with_no_first_place_votes_ids.each { |id|
       choice = Choice.find(id)
 
@@ -188,7 +188,7 @@ class Survey < ApplicationRecord
     @choice.update(params)
     #@survey = survey
     choice = @choice
-    self.send_message(choice)
+    send_message(choice)
 
   end
 
