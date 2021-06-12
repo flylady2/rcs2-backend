@@ -16,11 +16,21 @@ class Api::V1::ResponsesController < ApplicationController
 
   def encrypt(email)
     len = ActiveSupport::MessageEncryptor.key_len
-    salt = rand(9999999999).to_s.center(32, rand(9).to_s)
+    #new code to generate salt
+    salt = ""
+    prng = Random.new(1234)
+    count = 1
+    while count < 33
+      number = prng.rand(9)
+      salt.concat(number.to_s)
+      count += 1
+    end
+    #salt = rand(9999999999).to_s.center(32, rand(9).to_s)
     key = ActiveSupport::KeyGenerator.new('password').generate_key(salt, len)
     crypt = ActiveSupport::MessageEncryptor.new(key)
     encrypted_email = crypt.encrypt_and_sign(email)
     token= "#{salt}$$#{encrypted_email}"
+
 
 
 
@@ -38,16 +48,6 @@ class Api::V1::ResponsesController < ApplicationController
     email = crypt2.decrypt_and_verify(data)
   end
 
-
-
-  def index
-    @responses = Response.all
-    options = {
-      include: [:choices, :rankings]
-    }
-    render json: { responses: ResponseSerializer.new(@responses, options)}
-  
-  end
 
   def create
 
@@ -91,9 +91,6 @@ class Api::V1::ResponsesController < ApplicationController
 
   end
 
-  def update
-
-  end
 
 
 private
